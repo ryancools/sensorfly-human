@@ -35,8 +35,6 @@ nosetests.xml
 .pydevproject
 .DS_Store
 
-*.txt
-
 *.eps
 
 *.fig
@@ -46,7 +44,6 @@ nosetests.xml
 *.m~
 
 *.m
-/Data/
 /MatlabPlots/
 /.pydevproject
 
