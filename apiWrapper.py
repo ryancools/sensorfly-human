@@ -6,6 +6,8 @@ from flask import json
 import signal
 import sys
 
+from main_testbed import main
+
 app = Flask(__name__);
 
 data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
@@ -120,14 +122,14 @@ def stopSystem():
 
 signal.signal(signal.SIGINT, signal_handler);
 
-t1 = threading.Thread(target=updateData)
-t2 = threading.Thread(target=runAlgo)
+t1 = threading.Thread(target=main,args=(clients,data,systemRunning))
+#t2 = threading.Thread(target=runAlgo)
 
 t1.daemon = True;
-t2.daemon = True;
+#t2.daemon = True;
 
 t1.start();
-t2.start();
+#t2.start();
 
 
 app.debug = True;
