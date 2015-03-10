@@ -3,6 +3,8 @@ import random
 import threading
 import time
 from flask import json
+import signal
+import sys
 
 app = Flask(__name__);
 
@@ -14,6 +16,10 @@ data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
 clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
 globalGroundTruth = False;
 systemRunning = True;
+
+def signal_handler(signal, frame):
+        print('You pressed Ctrl+C!')
+        sys.exit(0)
 
 def updateData():
     while True:
@@ -112,9 +118,17 @@ def stopMoving(clientId):
 def stopSystem():
     systemRunning = False;
 
-threading.Thread(target=updateData).start()
-threading.Thread(target=runAlgo).start()
+signal.signal(signal.SIGINT, signal_handler);
+
+t1 = threading.Thread(target=updateData)
+t2 = threading.Thread(target=runAlgo)
+
+t1.daemon = True;
+t2.daemon = True;
+
+t1.start();
+t2.start();
 
 
-app.debug = True
+app.debug = True;
 app.run(host="localhost");
