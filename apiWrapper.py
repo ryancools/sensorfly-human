@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import random
 import threading
 import time
+from flask import json
 
 app = Flask(__name__);
 
@@ -12,6 +13,7 @@ data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
 
 clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
 globalGroundTruth = False;
+systemRunning = True;
 
 def updateData():
     while True:
@@ -54,9 +56,12 @@ def register(clientId):
 def groundTruth(clientId):
     print(request.json);
     if clients[clientId]["state"] == "Registered" or clients[clientId]["state"] == "Moved":
-        clients[clientId]["groundTruth"]["x"] = 1#request.json.x;
-        clients[clientId]["groundTruth"]["y"] = 2#request.json.y;
+        d = dict((key.encode('ascii'), value.encode('ascii')) for (key, value) in request.json.iteritems())
+        print(d);
+        clients[clientId]["groundTruth"]["x"] = d["x"];
+        clients[clientId]["groundTruth"]["y"] = d["y"];
         clients[clientId]["state"] = "GroundTruth";
+        print(clients[clientId]);
         return "Success";
     else:
         return "Error"
@@ -102,6 +107,10 @@ def stopMoving(clientId):
         return "Success";
     else:
         return "Error"
+
+@app.route("/stopSystem", methods=['GET'])
+def stopSystem():
+    systemRunning = False;
 
 threading.Thread(target=updateData).start()
 threading.Thread(target=runAlgo).start()
