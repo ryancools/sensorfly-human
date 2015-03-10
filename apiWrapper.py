@@ -11,6 +11,7 @@ data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
 # Unregistered, Registered, GroundTruth, Directions, Rotating, Rotated, Moving, Moved
 
 clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
+globalGroundTruth = False;
 
 def updateData():
     while True:
@@ -28,6 +29,7 @@ def runAlgo():
                 allReady = False;
 
         if allReady:
+            globalGroundTruth = True;
             # Run algo here
             client["directions"]["move"] = random.random();
             client["directions"]["rotate"] = random.random();
@@ -64,6 +66,7 @@ def requestDirections(clientId):
     if clients[clientId]["state"] == "GroundTruth" and clients[clientId]["directions"]["valid"]:
         clients[clientId]["state"] = "Directions";
         clients[clientId]["directions"]["valid"] = False;
+        globalGroundTruth = False;
         return jsonify(clients[clientId]["directions"]);
     else:
         return "Error"
