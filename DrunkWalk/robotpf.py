@@ -71,7 +71,9 @@ class RobotPF(object):
         
 #         self.particles_dir = np.random.normal(self.sf.mag_dir, self.sf.noise_mag, self.num_particles)
         # Compute new poses only if it has turned       
-        if self.sf.has_turned:
+        
+        #if self.sf.has_turned:
+        if True:
             # Add noise to turn
             nT = np.abs(self.sf.command.turn * self.noise_t)
             if nT == 0: nT = 0.1
@@ -98,6 +100,8 @@ class RobotPF(object):
         '''
         
         # Magnetometer correction
+        #print "correcting",sf.id,sf.mag_dir,sf.rssi
+        
         dir_dist =  stats.norm(self.sf.mag_dir, self.sf.noise_mag)
         self.weights = dir_dist.pdf(self.particles_dir)
         # Resample
@@ -108,7 +112,9 @@ class RobotPF(object):
         self.resample_fast()
 
         # Signature correction
-        signature = self.sf.getRadioSignature()
+        #signature = self.sf.getRadioSignature()
+        signature = sf.rssi
+        
 #        update_pf = landmark_db.match(signature, self)        
         update_pf = landmark_db.match(signature, self,sf)      #modified by xinlei  
         

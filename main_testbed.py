@@ -15,14 +15,26 @@ import os
 
 mapsize = "9_12"
 
-def main():
+clients = None
+data = None
+systemRunning = None
+
+def main(inputClients, inputData, inputSystemRunning):
     print "Running SugarMapSim"
+    
+    global clients
+    global data
+    global systemRunning
+    clients = inputClients
+    data = inputData
+    systemRunning = inputSystemRunning
     
     drunkWalkCase(0)
         
 def drunkWalkCase(i):
+#def drunkWalkCase():
     
-    
+    print "running DrunkWalk"
     case = Case("DrunkWalk", "./ArenaMaps/testbed" + mapsize + ".bmp")
     case.cov_algo = "drunkwalk"
     case.start = [1,1]
@@ -47,8 +59,8 @@ def drunkWalkCase(i):
 # #     case.cov_algo = "drunkwalk_biased"
 #     case.goal_graph = goalgraph.GoalGraph()
     
-    case.num_explorers = 4
-    case.num_anchors = 4#6
+    case.num_explorers = 1
+    case.num_anchors = 3#6
     
     # Noises
     case.noise_radio = 0.1
@@ -58,6 +70,7 @@ def drunkWalkCase(i):
     case.fail_prob = 0
     
     #     Import the database of collected RF signatures
+    '''
     raw = np.loadtxt("./ArenaMaps/testbed_sigs/sensorfly_x_y_time_id_rss.txt", delimiter=',');
     #raw = np.loadtxt("./ArenaMaps/testbed_sigs/fingerprint36*27.txt", delimiter=',');
       
@@ -75,17 +88,17 @@ def drunkWalkCase(i):
                     rss = np.array([0])
                 case.rf_signature_db[(i,j,k)] = rss
 
-    
+    '''
     # Particle filter settings
     case.stop_on_all_covered = True
     case.num_particles = 100
     
     # Display
-    case.is_display_on_real = True#False
+    case.is_display_on_real = False
     
     # Run case
-    case.num_total_run = 360
-    case.max_iterations = 5
+    case.num_total_run = 3600
+    case.max_iterations = 1#5
     case.deltick = 1
     
     runCase(case)
@@ -119,25 +132,40 @@ def runCase(case):
                 sf_xy = case.start
             
             
-            
+            ### need to set up initial values for each sf
+            '''
             _sf_explorer = sensorfly.SensorFly(str(i), sf_xy, 0, 100,
                                                case.noise_velocity, case.noise_turn, 
                                                case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case)
             
-            _cnt.addExplorer(_sf_explorer)  
+            '''
+            _sf_explorer = sensorfly.SensorFly( (i+1), sf_xy, 0, 100,
+                                               case.noise_velocity, case.noise_turn, 
+                                               case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case )
+            
+            
+            _cnt.addExplorer(_sf_explorer)
         
         
         # Create SensorFly Anchors
         for i in range(case.num_anchors): #@UnusedVariable
+            '''
             _sf_anchor = sensorfly.SensorFly(str(100 + i), 
                                              [1 + random.random() * (case.al-2), 1 + random.random() * (case.aw-2)], 0, 100, 
                                              case.noise_velocity, case.noise_turn, 
-                                             case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case)        
+                                             case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case)  
+            '''
+            _sf_anchor = sensorfly.SensorFly( (100 + i+1), 
+                                             [1 + random.random() * (case.al-2), 1 + random.random() * (case.aw-2)], 0, 100, 
+                                             case.noise_velocity, case.noise_turn, 
+                                             case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case) 
+            
+                  
             _cnt.addAnchor(_sf_anchor)            
         
         # Run the simulation
         try:
-            record = _cnt.run(num_ticks, case, pbar, it)
+            record = _cnt.run(num_ticks, case, pbar, it,clients, data,systemRunning)
             record_list.append(np.array(record))
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -168,5 +196,6 @@ def saveMatFile(mdict, case):
     scipy.io.savemat(file_str, mdict, oned_as='row')
     
     
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()
+    

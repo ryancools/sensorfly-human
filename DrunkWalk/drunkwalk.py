@@ -10,7 +10,6 @@ from cmdalgo import CmdBiased
 # from cmdalgo import CmdRandom
 from landmark import LandmarkDB
 
-
 class DrunkWalk(object):
     '''
     DrunkWalk deployment algorithm
@@ -51,23 +50,32 @@ class DrunkWalk(object):
 
             
            
-    def command(self):
+    def command(self,clients):
         '''
         Command as per the planning algorithm
         '''
         for sf in self.sflist:
-            if not sf.is_goal_reached:  #this if condition is added by xinlei
+            if (not sf.is_goal_reached) and (not sf.cmd_set_flag):  #this if condition is added by xinlei
                 cmd = self.cmd_algo.getCommand(sf)
+                
+                print sf.id, cmd
+                #added by xinlei for human experiment testing
+                sf.cmd_set_flag = True
+                # send the command by wifi
+                clients[sf.id-1]['directions']['rotate']=cmd[0]
+                clients[sf.id-1]['directions']['move']=cmd[1]*cmd[2]
+                clients[sf.id-1]['directions']['valid'] = True
+                
                 if cmd:
                     sf.setMoveCommand(cmd)
         
     
-    def update(self):
+    def update(self,clients):
         '''
         Update the estimates as per command 
         '''
         for sf in self.sflist:
-            if not sf.is_goal_reached:  #this if condition is added by xinlei
+            if (not sf.is_goal_reached) and (not sf.pf_updated_flag):  #this if condition is added by xinlei
                 # Collision back-off strategy
                 if sf.has_collided:
                     if sf.is_backing_off:
@@ -119,3 +127,7 @@ class DrunkWalk(object):
                     pos[0][1] = pos[0][1] + (sf.command.velocity * self.deltick) * math.sin(math.radians(pos[1]))
                     self.dr_estimated_pos[sf.name] = pos
                     sf.dr_estimated_xy = np.array(pos[0], np.float32)    
+                    #print "update deadreckning!"
+                    #print sf.dr_estimated_xy,pos,sf.command.velocity,sf.command.turn
+                # added by xinlei for human experiments
+                sf.pf_updated_flag = True

@@ -10,7 +10,16 @@ import numpy as np
 import os
 import random
 
+from xbee import XBee
+import serial
+from time import sleep
 
+#from apiWrapper import clients
+
+clients = None
+data = None
+
+States = ["Unregistered","Registered", "GroundTruth", "Directions", "Rotating", "Rotated", "Moving", "Moved"]
 
 class Controller(object):
     '''
@@ -27,6 +36,10 @@ class Controller(object):
         self.anchors = list()
         self.base = [1, 1]
         self.deltick = []
+        
+        #added by xinlei
+        self.state = "Unregistered"
+       
         
 
     def addExplorer(self, sf):
@@ -90,7 +103,7 @@ class Controller(object):
                 return False
         return True
 
-
+    
     def addAnchor(self, sf):
         '''
         Add a SensorFly to the simulation
@@ -120,13 +133,133 @@ class Controller(object):
     def getAnchors(self):
         return self.anchors
     
+    
+    # added by xinlei
+    def _state_cnt(self,xbee,algo):
+        
+        for sf in self.explorers:
+            print self.state,"explorer no.", sf.id
+            #print clients
+            if self.state == "Unregistered":
+                # input id
+                
+                sf.is_moving = False
+                #print self.state
+                
+            elif self.state == "Registered":
+                #print self.state
+                
+                sf.is_moving = False
+                sf.has_turned = False
+                sf.rssi_rcving_flag = True
+                sf.gnd_trth_rcd_flag = False
+                
+                sf.cmd_set_flag = False
+                
+            elif self.state == "GroundTruth":
+                #receive sf.xy
+                #print self.state
+                
+                sf.is_moving = False
+                
+                self.updateReal()
+                
+                if sf.rssi_rcving_flag:
+                    sf.reset_rssi()
+                sf.get_rssi(xbee)
+                
+                sf.pf_updated_flag = False
+                
+                sf.cmd_set_flag = False
+                #if sf.rssi_rcv_all and sf.cmd_set_flag == False:
+                algo.update(clients)   #needed to be changed
+                algo.command(clients)
+                    
+                    
+                
+            elif self.state == "Directions":
+                #print self.state
+                
+                sf.is_moving = False
+                
+                # algo here
+                #algo.update()   #needed to be changed
+                #algo.command()
+                #send command
+            elif self.state == "Rotating":
+                #start Rotating
+               # print self.state
+                
+                sf.is_moving = True
+                
+                print data
 
-    def run(self, num_ticks, case, pbar, it):
+                sf.get_opt_mag(xbee, data)
+                sf.mag_rcving_flag = True
+                sf.mag_rcd_flag = True
+                
+                
+                
+                
+            elif self.state == "Rotated":
+                
+                #stop rotating
+                #print self.state
+                
+                sf.is_moving = False
+                
+                sf.get_opt_mag(xbee,data)
+                sf.mag_rcving_flag = False
+                sf.mag_rcd_flag = False
+                sf.rst_opt_flag = True
+                
+                print sf.mag_dir
+                #get sf.mag_dir and update
+                
+            elif self.state == "Moving":
+                #start moving
+                #print self.state
+                #print data
+
+                sf.is_moving = True
+                
+                sf.send_rst_opt(xbee)   #reset px4flow distance calculation
+                sf.get_opt_mag(xbee, data)
+                sf.opt_rcving_flag = True
+                sf.opt_rcd_flag = True
+                
+            elif self.state == "Moved":
+                #print self.state
+                
+                sf.is_moving = False
+                sf.has_turned = False
+                
+                sf.get_opt_mag(xbee,data)
+                sf.opt_rcving_flag =False
+                sf.opt_rcd_flag = False
+                
+                sf.rssi_rcving_flag = True
+                
+                #print sf.opt
+                #get sf.mag_dir and update
+                
+        sleep(.25)
+        
+    def run(self, num_ticks, case, pbar, it,inputClients, inputData,systemRunning):
         '''
         Run the simulation
         Params: runtime - time to run in seconds
                 deltick - one tick in seconds
         '''
+        global clients
+        global data
+        clients = inputClients
+        data = inputData
+        
+        #added by xinlei for human experiment    
+        ser = serial.Serial('/dev/tty.usbserial-DA017KHH',38400)
+        xbee = XBee(ser)
+
 
         self.c_map = GridMap(np.zeros(self.arena.gridmap.map.shape))
         self.deltick = case.deltick
@@ -137,13 +270,33 @@ class Controller(object):
         if case.is_display_on_real:
             self.arena.gridmap.displayInit()
         record = []
+        
         # Main loop
-        for tick in range(0, num_ticks):
-            pbar.update((num_ticks * it) + tick)
-            #print
-            algo.command()  #get command and set command for each explorer
-            self.updateReal()   #execute command and update SensorFly location in real arena
-            algo.update()   #Update the estimates as per command 
+        state_counter = 0
+        #for tick in range(0, num_ticks):
+        while systemRunning[0]:
+            
+            self.state = clients[0]["state"]
+            
+            
+            #pbar.update((num_ticks * it) + tick)
+            
+            #algo.command()  #get command and set command for each explorer
+            #self.updateReal()   #execute command and update SensorFly location in real arena
+            #algo.update()   #Update the estimates as per command 
+            
+            '''
+            if (tick%10==0):
+                if (state_counter<7):
+                    state_counter +=1  
+                else:
+                    state_counter = 0
+            self.state = States[state_counter]
+            '''
+            #self.state = States[4]
+            
+            self._state_cnt(xbee,algo)
+            
             # Record data
             if case.goal_graph:
                 [pct_covered, is_all_covered] = case.goal_graph.getCoverage()
@@ -152,13 +305,15 @@ class Controller(object):
             
 #             goal_reached = [sf.is_goal_reached for sf in self.explorers]
             
+            
             sig_match_cnt = sum([sf.sig_match_cnt for sf in self.explorers])
             
             for sf in self.explorers:
-                record.append([tick, int(sf.name), sf.xy[0], sf.xy[1], \
+                record.append([1, int(sf.name), sf.xy[0], sf.xy[1], \
                                sf.pf_estimated_xy[0], sf.pf_estimated_xy[1], \
                                #sf.dr_estimated_xy[0], sf.dr_estimated_xy[1], pct_covered, sig_match_cnt])
                                sf.dr_estimated_xy[0], sf.dr_estimated_xy[1], pct_covered, sig_match_cnt,sf.certainty])  #modified by xinlei
+            
             # Visualize
             if case.is_display_on_real:
                 self.arena.gridmap.displayUpdate()
@@ -179,16 +334,32 @@ class Controller(object):
             # If SensorFly is dead continue
             if not sf.is_alive or sf.is_goal_reached: 
                 continue
+            
+            #needed to receive x,y from phone
+            xy = np.random.random_sample(2)*5
+            
+            # need to deal with collision and moving
+            
+            
             pos = self.arena.gridmap.xytocell(sf.xy)
             self.arena.gridmap.markMap(pos, self.arena.gridmap.v_covered)
             oldpos = pos
             # Update
-            sf.update(self.deltick, self.arena)
+            #sf.update(self.deltick, self.arena)
+                # need to deal with collision and moving
+            sf.is_moving = False
+            
+            if (sf.gnd_trth_rcd_flag==False):
+                #sf.xy = xy
+                sf.xy = [int(clients[sf.id-1]['groundTruth']['x']),int(clients[sf.id-1]['groundTruth']['y'])]
+                sf.gnd_trth_rcd_flag = True
+                
             # Mark new position in arena
             pos = self.arena.gridmap.xytocell(sf.xy)
             self.coverAllInBetween(pos, oldpos, self.arena.gridmap)
             self.arena.gridmap.markMap(pos, self.arena.gridmap.v_node)
             
+            print "explorer ", sf.id, sf.xy
             #print pos
 
     def coverAllInBetween(self, loc, lastloc, lmap):

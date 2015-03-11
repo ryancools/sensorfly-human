@@ -17,10 +17,17 @@ data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
 
 clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
 globalGroundTruth = False;
-systemRunning = True;
+systemRunning = [True];
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
 
 def signal_handler(signal, frame):
         print('You pressed Ctrl+C!')
+        shutdown_server()
         sys.exit(0)
 
 def updateData():
@@ -62,14 +69,14 @@ def register(clientId):
 
 @app.route("/groundTruth/<int:clientId>", methods=['POST'])
 def groundTruth(clientId):
-    print(request.json);
+    #print(request.json);
     if clients[clientId]["state"] == "Registered" or clients[clientId]["state"] == "Moved":
         d = dict((key.encode('ascii'), value.encode('ascii')) for (key, value) in request.json.iteritems())
-        print(d);
+        #print(d);
         clients[clientId]["groundTruth"]["x"] = d["x"];
         clients[clientId]["groundTruth"]["y"] = d["y"];
         clients[clientId]["state"] = "GroundTruth";
-        print(clients[clientId]);
+        #print(clients[clientId]);
         return "Success";
     else:
         return "Error"
@@ -118,7 +125,8 @@ def stopMoving(clientId):
 
 @app.route("/stopSystem", methods=['GET'])
 def stopSystem():
-    systemRunning = False;
+    systemRunning[0] = False;
+    return "Success";
 
 signal.signal(signal.SIGINT, signal_handler);
 
@@ -132,5 +140,5 @@ t1.start();
 #t2.start();
 
 
-app.debug = True;
-app.run(host="localhost");
+app.debug = False;
+app.run(host="10.0.23.151", port=5001);

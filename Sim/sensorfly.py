@@ -12,23 +12,37 @@ import random
 import numpy as np
 import copy
 
+from numpy import zeros, int16
+import binascii
+from xbee import XBee
+
+
+#from apiWrapper import data
+
 DES_THRESHOLD = 1.5
+TYPE_RSSI = 1
+TYPE_OPT = 2
+TYPE_MAG =3
 
 class SensorFly(object):
     '''
     SensorFly node
     '''
-    def __init__(self, name, init_xy, init_dir, init_battery, \
+    #def __init__(self, name, init_xy, init_dir, init_battery, \
+    #             noise_vel, noise_turn, noise_radio, noise_mag, fail_prob, controller, case=None):
+    def __init__(self, id, init_xy, init_dir, init_battery, \
                  noise_vel, noise_turn, noise_radio, noise_mag, fail_prob, controller, case=None):
+    
         '''
         Params: length in no. of cells
                 breadth in no. of cells
         '''
-        self.name = name
+        self.name = str(id)
+        self.id = id
         
         self.xy = [float(i) for i in init_xy] # In meters
         self.dir = float(init_dir)
-        self.mag_dir = float(init_dir)
+        #self.mag_dir = float(init_dir)
         
         self.is_alive = True 
         self.is_moving = False
@@ -40,20 +54,22 @@ class SensorFly(object):
         self.__real_command = Command(0,0,0)
         self.command_time_cnt = 0
         
+        
         self.noise_velocity = float(noise_vel)
         self.noise_turn = float(noise_turn)
         self.noise_radio = float(noise_radio)
         self.noise_mag = float(noise_mag)
         self.noise_fingerprint = [[self.noise_radio/2,0],[0,self.noise_radio/2]]
-
         
+        '''
         self.odometer = Odometer(self.noise_velocity, self.noise_turn)
         self.radio = Radio(self)
         self.mag = Magnetometer(self)
+        '''
         
         self.has_collided = False
         self.is_goal_reached = False
-        self.fail_prob = fail_prob
+        #self.fail_prob = fail_prob
         self.collision_count = 0
         
         # Records estimated location
@@ -78,6 +94,30 @@ class SensorFly(object):
         self.certainty = 0
         self.case = case
         
+        #added by xinlei for human experiment
+        self.id = id
+        self.n_anchors = case.num_anchors
+        
+        self.rssi= zeros(self.n_anchors)
+        self.rssi_rcving_flag = False
+        self.rssi_rcv_all = False
+        
+        self.mag_dir = float(init_dir)
+        self.mag_rcving_flag = False    #flag for getting mag data from explorer and forward to phone
+        self.mag_rcd_flag = False       #flag for recording mag data
+        
+        self.opt = 0
+        self.opt_rcving_flag = False    #flag for getting opt data from explorer and forward to phone
+        self.opt_rcd_flag = False       #flag for recording opt data
+        
+        self.gnd_trth_rcd_flag = False      #flag for recording ground truth position
+        self.rst_opt_flag = False       #flag for reseting optical flow
+        self.des_addr = '\x01'+chr(self.id)
+        
+        self.pf_updated_flag = False    #flag for updating particle filter
+        self.cmd_set_flag = False       #flag for setting command for explorers
+        
+        
     def setMoveCommand(self, command_params):
         '''
         Params: turn - the angle to turn in degrees
@@ -91,8 +131,8 @@ class SensorFly(object):
         self.command.velocity = float(velocity)
         
         self.__real_command = copy.deepcopy(self.command)
-        self.__real_command.velocity = self.odometer.velocity(velocity)
-        self.__real_command.turn = self.odometer.turn(turn)
+        #self.__real_command.velocity = self.odometer.velocity(velocity)
+        #self.__real_command.turn = self.odometer.turn(turn)
         self.command_time_cnt = self.__real_command.time
         
         # Store the last executed command_params
@@ -104,54 +144,55 @@ class SensorFly(object):
         Params: deltick - the time tick in seconds
         '''
         # Move
-        if self.is_moving:
+        #if self.is_moving:
             # Turn instantly in first tick
-            if (self.command_time_cnt == self.__real_command.time):
-                self.dir = (self.dir + self.__real_command.turn) % 360
-                self.has_turned = True
-            else:
-                self.has_turned = False
+            #if (self.command_time_cnt == self.__real_command.time):
+        if self.has_turned == False:
+            self.dir = (self.dir + self.__real_command.turn) % 360
+            self.has_turned = True
+        #self.has_turned = True
+        #    else:
+                #self.has_turned = False
                 
             # Get the magnetometer reading for direction
-            self.mag_dir = self.mag.getDirection()
+         #   self.mag_dir = self.mag.getDirection()
                 
             # Set the time taking into account the tick size    
-            if (self.command_time_cnt - deltick <= 0):
-                deltime = self.command_time_cnt
-                self.command_time_cnt = 0
-            else:
-                self.command_time_cnt = self.command_time_cnt - deltick
-                deltime = deltick
+         #   if (self.command_time_cnt - deltick <= 0):
+         #       deltime = self.command_time_cnt
+         #       self.command_time_cnt = 0
+         #   else:
+          #      self.command_time_cnt = self.command_time_cnt - deltick
+          #      deltime = deltick
                 
             
-            oldpos = self.xy
-            newx = self.xy[0] + ((self.__real_command.velocity * deltime) * \
+        oldpos = self.xy
+        newx = self.xy[0] + ((self.__real_command.velocity * deltime) * \
                              math.cos(math.radians(self.dir)))
-            newy = self.xy[1] + ((self.__real_command.velocity * deltime) * \
+        newy = self.xy[1] + ((self.__real_command.velocity * deltime) * \
                              math.sin(math.radians(self.dir)))
-            newpos = [newx, newy]
+        newpos = [newx, newy]
                         
-            is_collision = self.isCollision(oldpos,newpos,arena)
+        is_collision = self.isCollision(oldpos,newpos,arena)
             
             # If no collision setMoveCommand to new point
-            if is_collision == False:
-                self.xy = [newx, newy]
-            else: # Else stop at object boundary
-                self.is_moving = False
-                self.command_time_cnt = 0
-                self.is_backing_off = False
+        if is_collision == False:
+            self.xy = [newx, newy]
+        else: # Else stop at object boundary
+            self.is_moving = False
+            self.command_time_cnt = 0
+            self.is_backing_off = False
              
             # If the movement is complete
-            if (self.command_time_cnt == 0):
-                self.is_moving = False
-                self.is_backing_off = False
+        #if (self.command_time_cnt == 0):
+        #    self.is_moving = False
+        #    self.is_backing_off = False
                 
             #added by xinlei
-            if np.linalg.norm(np.array(self.xy) - np.array(self.des)) < DES_THRESHOLD:
-                self.is_goal_reached = True 
+        if np.linalg.norm(np.array(self.xy) - np.array(self.des)) < DES_THRESHOLD:
+            self.is_goal_reached = True 
             
-        else:
-            deltime = 0
+        
         
     
     def isCollision(self, oldpos, newpos, arena):
@@ -236,7 +277,101 @@ class SensorFly(object):
 
         return [X,Y]
     
+    #****************************************************************************************                
+    #     For communication
+    #****************************************************************************************
     
+    def _rssi_rcv_all(self):
+        for i in range(0,self.n_anchors):
+            if (self.rssi[i]==0):
+                return False
+        return True
+    
+    def reset_rssi(self):
+        self.rssi = zeros(self.n_anchors)
+        self.rssi_rcv_all = False
+    
+    
+    def get_rssi(self,xbee):
+        while (self.rssi_rcv_all==False and self.rssi_rcving_flag == True):
+            try:
+                response = xbee.wait_read_frame()
+                #print response
+                addr = response.get('source_addr')
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
+                    rf_data = response.get('rf_data')
+                    if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_RSSI):   # get RSSI package
+                        for i in range(0,self.n_anchors):
+                            ancho_id = int(('0x' + binascii.hexlify(rf_data[2*i+1])),16)
+                            if (self.rssi[ancho_id-1] == 0):    #has not got new rssi after reset
+                                self.rssi[ancho_id-1] = int(('0x' + binascii.hexlify(rf_data[2*i+2])),16)
+                    #print rf_data0, rf_data1
+                    self.rssi_rcv_all = self._rssi_rcv_all()
+                    if (self.rssi_rcv_all):
+                        self.rssi_rcving_flag = False
+                        self.print_rssi()
+                        break
+            except KeyboardInterrupt:
+                return
+                
+        return
+    
+    def print_rssi(self):
+        print "rssi"
+        for i in range(0,self.n_anchors):
+            print i+1,self.rssi[i]
+            
+            
+            
+    def get_opt_mag(self,xbee, data):
+        if (self.mag_rcving_flag == True or self.opt_rcving_flag == True):
+            try:
+                response = xbee.wait_read_frame()
+                addr = response.get('source_addr')
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
+                    rf_data = response.get('rf_data')
+                    if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_MAG and self.mag_rcving_flag == True):   # get MAG package
+                        #put parse MAG package here
+                        #print "MAG package"
+                        mag_data = (int(('0x' + binascii.hexlify(rf_data[1])),16) *256 + int(('0x' + binascii.hexlify(rf_data[2])),16))
+                        mag_data = int16(mag_data)
+                        
+                        data[self.id-1]['rotation'] = str(mag_data)
+                
+                        
+                        print mag_data
+                        #if record the data
+                        if (self.mag_rcd_flag):
+                            self.mag_dir = mag_data
+                            self.mag_rcd_flag = False
+                            # need send a reset command to Multiwii
+                        #send MAG data to phone
+                    elif (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_OPT and self.opt_rcving_flag == True):   # get opt package
+                        #put parse opt package here
+                        #print "OPT package"
+                        opt_data = int(('0x' + binascii.hexlify(rf_data[1])),16) *256 + int(('0x' + binascii.hexlify(rf_data[2])),16)
+                        
+                        data[self.id-1]['distance'] = str(opt_data)
+                        print opt_data
+                         #if record the data
+                        if (self.opt_rcd_flag):
+                            self.opt = opt_data
+                            self.opt_rcd_flag = False
+                            # need send a reset command to Multiwii
+                        
+                        #send OPT data to phone
+      
+            except KeyboardInterrupt:
+                return
+                
+        return    
+    
+    def send_rst_opt(self,xbee):    
+        if (self.rst_opt_flag==True):
+            for i in range (0,10):
+                xbee.tx(dest_addr=self.des_addr,data='\x05\x01')
+                self.rst_opt_flag = False
+                print self.id,"reset"
 #****************************************************************************************                
 #     Helper Classes
 #****************************************************************************************
@@ -259,3 +394,4 @@ class Command:
         Constructor
         '''
         return Command(turn, time, velocity)
+    

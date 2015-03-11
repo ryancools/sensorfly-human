@@ -31,6 +31,8 @@ class CmdBiased():
             est_pos = sf.pf_estimated_xy#sf.dr_estimated_xy##np.array(sf.xy)#
 #             est_cell = self.c_map.xytocell(est_pos)
             est_cells = self.c_map.xytocellArray(sf.pf_particles_xy)
+            
+            
             return self.__getCommandFromGraph(sf, est_cells, est_pos)
         # Return none if no movement is needed
         return None
@@ -50,7 +52,7 @@ class CmdBiased():
             next_dir = random.randrange(0,360,20)
          # modification end  
             
-       
+        #print "next_dir",next_dir
             
         if next_dir is None:
             next_dir = sf.last_goal_dir
@@ -111,7 +113,7 @@ class CmdBiased():
         turn = next_dir - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 1.0  
+        velocity = 5#1.0  
         time = 1#5      #modified by xinlei
         
         
