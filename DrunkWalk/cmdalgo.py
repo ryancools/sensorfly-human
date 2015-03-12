@@ -10,6 +10,9 @@ from math import atan
 
 CERTAIN_THRESHOLD = 4.5
 
+Vel = 0.2
+TimeToGo = 1
+
 class CmdBiased():
     
     def __init__(self, case, c_map):
@@ -25,9 +28,10 @@ class CmdBiased():
         # if collided backup randomly jump to a new location
         if sf.has_collided:
             command = self.__computeBackoff(sf)
+            sf.has_collided = False
             return command
         # If old command is complete execute new
-        if not sf.is_moving:
+        if True:
             est_pos = sf.pf_estimated_xy#sf.dr_estimated_xy##np.array(sf.xy)#
 #             est_cell = self.c_map.xytocell(est_pos)
             est_cells = self.c_map.xytocellArray(sf.pf_particles_xy)
@@ -71,8 +75,8 @@ class CmdBiased():
         turn = next_pos - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 1
-        time = random.randint(1,10)
+        velocity = Vel
+        time = TimeToGo#random.randint(1,10)
         return [turn, time, velocity]
     
     # added by xinlei, get direction to the destination
@@ -99,8 +103,8 @@ class CmdBiased():
         turn = new_dir - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 1
-        time = 2 ** sf.backoff_time_cnt
+        velocity = Vel
+        time = TimeToGo#2 ** sf.backoff_time_cnt
         return [turn, time, velocity]
     
     
@@ -113,8 +117,8 @@ class CmdBiased():
         turn = next_dir - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 5#1.0  
-        time = 1#5      #modified by xinlei
+        velocity = Vel#5#1.0  
+        time = TimeToGo#1#5      #modified by xinlei
         
         
         

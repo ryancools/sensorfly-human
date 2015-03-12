@@ -20,6 +20,8 @@ data = None
 systemRunning = None
 
 def main(inputClients, inputData, inputSystemRunning):
+#def main():
+
     print "Running SugarMapSim"
     
     global clients
@@ -59,7 +61,7 @@ def drunkWalkCase(i):
 # #     case.cov_algo = "drunkwalk_biased"
 #     case.goal_graph = goalgraph.GoalGraph()
     
-    case.num_explorers = 1
+    case.num_explorers = 1#1
     case.num_anchors = 3#6
     
     # Noises
@@ -97,7 +99,7 @@ def drunkWalkCase(i):
     case.is_display_on_real = False
     
     # Run case
-    case.num_total_run = 3600
+    case.num_total_run = 14000#360
     case.max_iterations = 1#5
     case.deltick = 1
     
@@ -108,6 +110,9 @@ def runCase(case):
     '''
     Run the case for computing S for the first room
     '''
+    print "Running runCase"
+
+    
     record_list = []
     widgets = ['Case: ', pb.Percentage(), ' ', pb.Bar(),' ',pb.ETA()]
     num_ticks = int(case.num_total_run / case.deltick)
@@ -139,7 +144,7 @@ def runCase(case):
                                                case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case)
             
             '''
-            _sf_explorer = sensorfly.SensorFly( (i+1), sf_xy, 0, 100,
+            _sf_explorer = sensorfly.SensorFly( (i), sf_xy, 0, 100,
                                                case.noise_velocity, case.noise_turn, 
                                                case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case )
             
@@ -155,7 +160,7 @@ def runCase(case):
                                              case.noise_velocity, case.noise_turn, 
                                              case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case)  
             '''
-            _sf_anchor = sensorfly.SensorFly( (100 + i+1), 
+            _sf_anchor = sensorfly.SensorFly( (100 + i), 
                                              [1 + random.random() * (case.al-2), 1 + random.random() * (case.aw-2)], 0, 100, 
                                              case.noise_velocity, case.noise_turn, 
                                              case.noise_radio, case.noise_mag, case.fail_prob, _cnt, case) 
@@ -164,8 +169,18 @@ def runCase(case):
             _cnt.addAnchor(_sf_anchor)            
         
         # Run the simulation
+        
+        folder_str = "./Data/" + case.name + "/"
+        if not os.path.exists(folder_str):
+            os.makedirs(folder_str)
+        file_str = folder_str +"/expdata_m"  + mapsize + '_e' + str(case.num_explorers) + "_a" + str(case.num_anchors) \
+                                        + "_p" + str(case.num_particles) + "_i" + str(case.max_iterations) \
+                                        + "_nr" + str(case.noise_radio) \
+                                        + "_nv" + str(int(case.noise_velocity * 100)) \
+                                        + "_nt" + str(int(case.noise_turn * 100))+'.txt'
+#                                         + "_" + timestr
         try:
-            record = _cnt.run(num_ticks, case, pbar, it,clients, data,systemRunning)
+            record = _cnt.run(num_ticks, case, pbar, it,clients, data,systemRunning,file_str)
             record_list.append(np.array(record))
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
