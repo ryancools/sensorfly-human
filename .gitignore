@@ -43,7 +43,7 @@ nosetests.xml
 
 *.m~
 
-*.m
+#*.m
 /MatlabPlots/
 /.pydevproject
 
