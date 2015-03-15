@@ -15,6 +15,7 @@ import copy
 from numpy import zeros, int16
 import binascii
 from xbee import XBee
+from __builtin__ import False
 
 
 #from apiWrapper import data
@@ -45,14 +46,14 @@ class SensorFly(object):
         #self.mag_dir = float(init_dir)
         
         self.is_alive = True 
-        self.is_moving = False
+        #self.is_moving = False
         self.is_backing_off = False
-        self.has_turned = False
+        #self.has_turned = False
         
         self.command = Command(0,0,0)
-        self.last_command = Command(0,0,0)
-        self.__real_command = Command(0,0,0)
-        self.command_time_cnt = 0
+        #self.last_command = Command(0,0,0)
+        #self.__real_command = Command(0,0,0)
+        #self.command_time_cnt = 0
         
         
         self.noise_velocity = float(noise_vel)
@@ -69,7 +70,7 @@ class SensorFly(object):
         
         self.has_collided = False
         self.is_goal_reached = False
-        #self.fail_prob = fail_prob
+        self.fail_prob = fail_prob
         self.collision_count = 0
         
         # Records estimated location
@@ -106,16 +107,31 @@ class SensorFly(object):
         self.mag_rcving_flag = False    #flag for getting mag data from explorer and forward to phone
         self.mag_rcd_flag = False       #flag for recording mag data
         
+        self.map_dir = 0                #direction for mag X+
+        
         self.opt = 0
         self.opt_rcving_flag = False    #flag for getting opt data from explorer and forward to phone
         self.opt_rcd_flag = False       #flag for recording opt data
         
+        self.real_updated = False       #flag for update position in real arena
+        
         self.gnd_trth_rcd_flag = False      #flag for recording ground truth position
         self.rst_opt_flag = False       #flag for reseting optical flow
-        self.des_addr = '\x01'+chr(self.id)
+        self.des_addr = '\x01'+chr(self.id+1)
         
         self.pf_updated_flag = False    #flag for updating particle filter
         self.cmd_set_flag = False       #flag for setting command for explorers
+        
+        self.state = "Unregistered"     #sensorfly state
+        
+        self.file_rcd_flag = False      # flag for put the record to file
+        
+        
+        
+        # flag for print state
+        self.p_flag_1 = True
+        self.p_flag_2 = True
+        
         
         
     def setMoveCommand(self, command_params):
@@ -130,13 +146,13 @@ class SensorFly(object):
         self.command.turn = float(turn)
         self.command.velocity = float(velocity)
         
-        self.__real_command = copy.deepcopy(self.command)
+        #self.__real_command = copy.deepcopy(self.command)
         #self.__real_command.velocity = self.odometer.velocity(velocity)
         #self.__real_command.turn = self.odometer.turn(turn)
-        self.command_time_cnt = self.__real_command.time
+        #self.command_time_cnt = self.__real_command.time
         
         # Store the last executed command_params
-        self.last_command = copy.deepcopy(self.__real_command)
+        #self.last_command = copy.deepcopy(self.__real_command)
         
         
     def update(self, deltick, arena):
@@ -305,6 +321,7 @@ class SensorFly(object):
                             ancho_id = int(('0x' + binascii.hexlify(rf_data[2*i+1])),16)
                             if (self.rssi[ancho_id-1] == 0):    #has not got new rssi after reset
                                 self.rssi[ancho_id-1] = int(('0x' + binascii.hexlify(rf_data[2*i+2])),16)
+                                print "got rssi from", ancho_id
                     #print rf_data0, rf_data1
                     self.rssi_rcv_all = self._rssi_rcv_all()
                     if (self.rssi_rcv_all):
@@ -324,8 +341,11 @@ class SensorFly(object):
             
             
     def get_opt_mag(self,xbee, data):
+        #if (self.mag_rcving_flag == True or self.opt_rcving_flag == True):
+        #print "running get_opt_mag outside"
         if (self.mag_rcving_flag == True or self.opt_rcving_flag == True):
             try:
+        #        print "running get_opt_mag"
                 response = xbee.wait_read_frame()
                 addr = response.get('source_addr')
                 if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
@@ -335,11 +355,16 @@ class SensorFly(object):
                         #print "MAG package"
                         mag_data = (int(('0x' + binascii.hexlify(rf_data[1])),16) *256 + int(('0x' + binascii.hexlify(rf_data[2])),16))
                         mag_data = int16(mag_data)
+                        mag_data = (mag_data+360)%360
                         
-                        data[self.id-1]['rotation'] = str(mag_data)
+                        #data[self.id]['rotation'] = str(mag_data)
+                        data[self.id]['rotation'] = float(mag_data)
+                        
+                        #data[self.id]['rotation'] = mag_data
+                
                 
                         
-                        print mag_data
+                        #print "magdata:",mag_data
                         #if record the data
                         if (self.mag_rcd_flag):
                             self.mag_dir = mag_data
@@ -350,9 +375,13 @@ class SensorFly(object):
                         #put parse opt package here
                         #print "OPT package"
                         opt_data = int(('0x' + binascii.hexlify(rf_data[1])),16) *256 + int(('0x' + binascii.hexlify(rf_data[2])),16)
+                        #opt_data = float(opt_data)
+                        #data[self.id]['distance'] = str(opt_data)
+                        data[self.id]['distance'] = float(opt_data)/1000
                         
-                        data[self.id-1]['distance'] = str(opt_data)
-                        print opt_data
+                        #data[self.id]['distance'] = opt_data
+
+                        #print "distance:", opt_data
                          #if record the data
                         if (self.opt_rcd_flag):
                             self.opt = opt_data

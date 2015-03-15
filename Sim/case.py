@@ -3,7 +3,7 @@ Created on 2012-10-13
 
 @author: Administrator
 '''
-import Image as img
+#import Image as img
 import numpy as np
 from Graph import goalgraph
 

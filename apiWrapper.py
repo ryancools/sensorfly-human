@@ -15,7 +15,8 @@ data = [{"rotation": 0, "distance": 0},{"rotation": 0, "distance": 0}];
 # States:
 # Unregistered, Registered, GroundTruth, Directions, Rotating, Rotated, Moving, Moved
 
-clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
+clients = [{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}},{"state": "Unregistered", "groundTruth": {"x": 0, "y" : 0}, "directions": {"move": 0, "rotate": 0, "valid": False}}]
+
 globalGroundTruth = False;
 systemRunning = [True];
 
@@ -32,10 +33,10 @@ def signal_handler(signal, frame):
 
 def updateData():
     while True:
-        data[0]["rotation"] = random.random();
-        data[0]["distance"] = random.random();
-        data[1]["rotation"] = random.random();
-        data[1]["distance"] = random.random();
+        #data[0]["rotation"] = random.random();
+        #data[0]["distance"] = random.random();
+        #data[1]["rotation"] = random.random();
+        #data[1]["distance"] = random.random();
         time.sleep(.1);
 
 def runAlgo():
@@ -126,6 +127,7 @@ def stopMoving(clientId):
 @app.route("/stopSystem", methods=['GET'])
 def stopSystem():
     systemRunning[0] = False;
+    shutdown_server()
     return "Success";
 
 signal.signal(signal.SIGINT, signal_handler);

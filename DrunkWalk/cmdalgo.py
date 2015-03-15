@@ -10,6 +10,9 @@ from math import atan
 
 CERTAIN_THRESHOLD = 4.5
 
+Vel = 0.2
+TimeToGo = 1
+
 class CmdBiased():
     
     def __init__(self, case, c_map):
@@ -24,10 +27,14 @@ class CmdBiased():
             self.goal_graph.markCovered(real_cell)
         # if collided backup randomly jump to a new location
         if sf.has_collided:
-            command = self.__computeBackoff(sf)
+#            command = self.__computeBackoff(sf)
+            #using random direction
+            command = [random.randrange(0,360,20),TimeToGo,Vel]
+            sf.has_collided = False
+            print "collision's command, random"
             return command
         # If old command is complete execute new
-        if not sf.is_moving:
+        if True:
             est_pos = sf.pf_estimated_xy#sf.dr_estimated_xy##np.array(sf.xy)#
 #             est_cell = self.c_map.xytocell(est_pos)
             est_cells = self.c_map.xytocellArray(sf.pf_particles_xy)
@@ -39,16 +46,21 @@ class CmdBiased():
     
     def __getCommandFromGraph(self, sf, est_cells, est_pos):
         # modified by xinlei, add the direction guidance
-        if sf.certainty < CERTAIN_THRESHOLD:        
+        if sf.certainty < CERTAIN_THRESHOLD:   
+            print "drunkwalk" 
+            next_dir= self.__getNextDirToDesSample(sf,est_pos)
+            
+            '''    
             if self.goal_graph is None:
                 next_dir= self.__getNextDirToDesSample(sf,est_pos)
             else:
                 next_dir = self.goal_graph.getNextDirSample(est_cells) 
-            
+            '''
             #added by xinlei, for debugging
 #            print sf.name, sf.xy[0], sf.xy[1], est_pos[0], est_pos[1], sf.last_goal_dir, next_dir, sf.dir#, command[0], sf.certainty    
 
         else: # Randomly pick a direction
+            print "random"
             next_dir = random.randrange(0,360,20)
          # modification end  
             
@@ -58,7 +70,8 @@ class CmdBiased():
             next_dir = sf.last_goal_dir
         sf.last_goal_dir = next_dir
         # Command the sensorfly to move
-        command = self.__getTurnTimeVel(sf, est_pos, next_dir)
+        command = [next_dir,TimeToGo,Vel]
+        #command = self.__getTurnTimeVel(sf, est_pos, next_dir)
         
  #       if sf.certainty < CERTAIN_THRESHOLD:        
  #           print command[0]
@@ -71,20 +84,35 @@ class CmdBiased():
         turn = next_pos - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 1
-        time = random.randint(1,10)
+        velocity = Vel
+        time = TimeToGo#random.randint(1,10)
         return [turn, time, velocity]
     
     # added by xinlei, get direction to the destination
     def __getNextDirToDesSample(self,sf,est_pos):
         dx = sf.des[0]-est_pos[0]
         dy = sf.des[1]-est_pos[1]
-        next_dir = degrees(arctan(dy/dx))
-        if dx<0:
-            next_dir += 180
-        elif dy<0:
-            next_dir += 360
         
+        #just for debugging
+        dx = sf.des[0] - sf.xy[0]
+        dy = sf.des[1]-sf.xy[1]
+        
+        if dx==0 and dy==0:
+            delta_dir = 0
+        elif dx==0 and dy>0:
+            delta_dir = 90
+        elif dx==0 and dy<0:
+            delta_dir = 270
+        else:
+            delta_dir = degrees(arctan(dy/dx))
+
+        if dx<0:
+            delta_dir += 180
+        elif dy<0 and dx>0:
+            delta_dir += 360
+    
+        next_dir = (delta_dir+sf.map_dir)%360
+        print delta_dir,next_dir
         return next_dir
             
     
@@ -99,8 +127,8 @@ class CmdBiased():
         turn = new_dir - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 1
-        time = 2 ** sf.backoff_time_cnt
+        velocity = Vel
+        time = TimeToGo#2 ** sf.backoff_time_cnt
         return [turn, time, velocity]
     
     
@@ -113,8 +141,8 @@ class CmdBiased():
         turn = next_dir - sf.dir
         if (turn < 0):
             turn = turn + 360
-        velocity = 5#1.0  
-        time = 1#5      #modified by xinlei
+        velocity = Vel#5#1.0  
+        time = TimeToGo#1#5      #modified by xinlei
         
         
         
