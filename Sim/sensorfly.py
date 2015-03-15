@@ -314,7 +314,7 @@ class SensorFly(object):
                 response = xbee.wait_read_frame()
                 #print response
                 addr = response.get('source_addr')
-                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id+1):    #get the data from explorer id 
                     rf_data = response.get('rf_data')
                     if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_RSSI):   # get RSSI package
                         for i in range(0,self.n_anchors):
@@ -348,7 +348,7 @@ class SensorFly(object):
         #        print "running get_opt_mag"
                 response = xbee.wait_read_frame()
                 addr = response.get('source_addr')
-                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id+1):    #get the data from explorer id 
                     rf_data = response.get('rf_data')
                     if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_MAG and self.mag_rcving_flag == True):   # get MAG package
                         #put parse MAG package here

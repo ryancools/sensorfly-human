@@ -132,15 +132,15 @@ def stopSystem():
 
 signal.signal(signal.SIGINT, signal_handler);
 
-t1 = threading.Thread(target=main,args=(clients,data,systemRunning))
+t1 = threading.Thread(target=main,args=(clients, data, systemRunning))
 #t2 = threading.Thread(target=runAlgo)
+#t2 = threading.Thread(target=updateData)
 
 t1.daemon = True;
 #t2.daemon = True;
 
 t1.start();
 #t2.start();
-
 
 app.debug = False;
 app.run(host="10.0.23.151", port=5001);

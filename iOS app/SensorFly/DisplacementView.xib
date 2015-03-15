@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14C1510" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DisplacementViewController">
+            <connections>
+                <outlet property="displacementLabel" destination="yuI-ar-cxc" id="TN4-za-TUd"/>
+                <outlet property="messageLabel" destination="OVU-WE-XF6" id="ASr-c3-qM0"/>
+                <outlet property="view" destination="iN0-l3-epB" id="Pq2-lI-K7q"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Go 3m" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OVU-WE-XF6">
+                    <rect key="frame" x="274" y="65" width="52" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="0m" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yuI-ar-cxc">
+                    <rect key="frame" x="272" y="125" width="68.5" height="57.5"/>
+                    <fontDescription key="fontDescription" type="boldSystem" pointSize="48"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IMJ-FU-mey">
+                    <rect key="frame" x="277" y="223" width="45" height="34"/>
+                    <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                    <state key="normal" title="Done">
+                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <connections>
+                        <action selector="tappedDone:" destination="-1" eventType="touchUpInside" id="Q0k-G7-0oB"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstAttribute="centerX" secondItem="IMJ-FU-mey" secondAttribute="centerX" id="4rL-kw-aPS"/>
+                <constraint firstAttribute="centerX" secondItem="yuI-ar-cxc" secondAttribute="centerX" constant="-6" id="Dpq-cw-dNN"/>
+                <constraint firstAttribute="centerX" secondItem="OVU-WE-XF6" secondAttribute="centerX" id="K47-Lr-e0Q"/>
+                <constraint firstItem="OVU-WE-XF6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="65" id="WuL-uQ-wus"/>
+                <constraint firstItem="yuI-ar-cxc" firstAttribute="top" secondItem="OVU-WE-XF6" secondAttribute="bottom" constant="40" id="XTZ-4y-Wlr"/>
+                <constraint firstItem="IMJ-FU-mey" firstAttribute="top" secondItem="yuI-ar-cxc" secondAttribute="bottom" constant="40" id="f5M-XX-Ec9"/>
+            </constraints>
+        </view>
+    </objects>
+</document>

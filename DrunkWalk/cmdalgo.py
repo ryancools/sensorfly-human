@@ -32,6 +32,7 @@ class CmdBiased():
             command = [random.randrange(0,360,20),TimeToGo,Vel]
             sf.has_collided = False
             print "collision's command, random"
+
             return command
         # If old command is complete execute new
         if True:

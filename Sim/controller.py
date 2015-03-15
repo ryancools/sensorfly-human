@@ -18,11 +18,11 @@ from time import sleep
 
 DES_THRESHOLD = 0.5
 
+
 clients = None
 data = None
 
 round = 0
-
 
 
 States = ["Unregistered","Registered", "GroundTruth", "Directions", "Rotating", "Rotated", "Moving", "Moved"]
@@ -143,7 +143,6 @@ class Controller(object):
     # added by xinlei
     def _state_cnt(self,xbee,algo,record):
         
-        
         for sf in self.explorers:
             #print sf.state,"explorer no.", sf.id
             
@@ -185,24 +184,26 @@ class Controller(object):
                     sf.p_flag_2 = True
                     
                     
+
                 #receive sf.xy
                 #print self.state
                 
                 #sf.is_moving = False
+
                 
                 self.updateReal(sf)
                 if sf.rssi_rcving_flag:
                     sf.reset_rssi()
                     sf.get_rssi(xbee)
                 #print "getting rssi for explorer no.", sf.id
+
                 
                 
                 #if sf.rssi_rcv_all and sf.cmd_set_flag == False:
                 algo.update(clients,sf)   #needed to be changed
                 algo.command(clients,sf)
                 
-                    
-                
+
                 sf.file_rcd_flag = False
                     
                 #print "explorer no.", sf.id,"[",   sf.command.velocity,sf.command.turn, "}"
@@ -215,6 +216,7 @@ class Controller(object):
                     sf.p_flag_1 = True
                 
                 
+
                 if not sf.file_rcd_flag:
                     
                         
@@ -239,13 +241,14 @@ class Controller(object):
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
                 
+
                 #start Rotating
                # print self.state
                 
                 #sf.is_moving = True
                 
                 print data
-                
+            
                 sf.get_opt_mag(xbee, data)
                 sf.mag_rcving_flag = True
                 sf.mag_rcd_flag = True
@@ -260,6 +263,7 @@ class Controller(object):
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_2 = False
                     sf.p_flag_1 = True
+
                 
                 #stop rotating
                 #print self.state
@@ -273,7 +277,7 @@ class Controller(object):
                 sf.mag_rcd_flag = False
                 sf.rst_opt_flag = True
                 
-                
+
                 #print sf.mag_dir
                 #get sf.mag_dir and update
                 
@@ -284,6 +288,7 @@ class Controller(object):
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
+
                 #start moving
                 #print self.state
                 print data
@@ -418,6 +423,7 @@ class Controller(object):
             if case.stop_on_all_covered and case.goal_graph and is_all_covered:
                 break
         #target.close()    
+
         return record
 
 
