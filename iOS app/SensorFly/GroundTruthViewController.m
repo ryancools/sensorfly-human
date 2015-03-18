@@ -49,8 +49,18 @@
 - (IBAction)tappedSend:(id)sender {
     // Send ground truth to server    
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
-    appDeletate.groundTruthX = self.inputFieldX.text;
-    appDeletate.groundTruthY = self.inputFieldY.text;
-    [appDeletate showNextViewControllerWithMessage:nil];
+    
+    if ([self.inputFieldX.text isEqualToString:@""] || [self.inputFieldY.text isEqualToString:@""]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error: Blank input"
+                                                        message:[NSString stringWithFormat:@"%@", @":("]
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+    } else {
+        appDeletate.groundTruthX = self.inputFieldX.text;
+        appDeletate.groundTruthY = self.inputFieldY.text;
+        [appDeletate showNextViewControllerWithMessage:nil];
+    }
 }
 @end
