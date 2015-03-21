@@ -46,7 +46,7 @@
     return [(str.length<maxLen)? str:[str substringToIndex:maxLen] stringByAppendingString:@" m"];
 }
 
-- (void)refreshDistance:(id)object {
+- (void)refreshDistance {
     AppDelegate *appDelegate = [UIApplication sharedApplication].delegate;
     
     while (!self.done) {
@@ -65,7 +65,7 @@
     self.messageLabel.text = [self formatDistanceString:[self message]];
     self.done = false;
 
-    [self performSelectorInBackground:@selector(refreshDistance:) withObject:nil];
+    [self performSelectorInBackground:@selector(refreshDistance) withObject:nil];
     /* AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
      dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^(){
         while (!self.done) {
@@ -89,6 +89,9 @@
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
     
     [appDeletate showNextViewControllerWithMessage:nil];
+}
+- (IBAction)tappedRefreshUI:(id)sender {
+    [self performSelectorInBackground:@selector(refreshDistance) withObject:nil];
 }
 
 /*

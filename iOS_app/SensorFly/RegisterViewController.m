@@ -27,7 +27,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    [self.inputField becomeFirstResponder];
+    [self.ipField becomeFirstResponder];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -48,7 +48,8 @@
 - (IBAction)tappedSend:(id)sender {
     // Send registration to server    
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
-    appDeletate.clientId = self.inputField.text;
+    appDeletate.clientId = self.idNumField.text;
+    [appDeletate setServerAddr:self.ipField.text];
     
     [appDeletate showNextViewControllerWithMessage:nil];
 

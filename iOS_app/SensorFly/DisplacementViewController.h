@@ -12,4 +12,5 @@
 - (instancetype)initWithMessage: (NSString*)message;
 @property (strong, nonatomic) NSString* message;
 @property (strong, nonatomic) IBOutlet UILabel *messageLabel;
+- (IBAction)tappedRefreshUI:(id)sender;
 @end

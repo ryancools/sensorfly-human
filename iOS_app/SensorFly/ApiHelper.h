@@ -15,6 +15,8 @@
 #define TESTING true
 
 @interface ApiHelper : NSObject
+@property (strong, nonatomic) NSString* serverAddr;
+- (void)setIpAndPort:(NSString *)strIp;
 - (NSDictionary*)sendGroundTruth:(NSString*)groundTruth withError:(NSError*)error;
 - (void)sendStop;
 - (void)sendMotionData:(CMDeviceMotion*)motion;

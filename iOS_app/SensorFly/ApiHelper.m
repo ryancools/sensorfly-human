@@ -10,6 +10,11 @@
 #import "AppDelegate.h"
 
 @implementation ApiHelper
+
+- (void)setIpAndPort:(NSString *)strIp {
+    [self setServerAddr:[@"http://" stringByAppendingString:[strIp stringByAppendingString:@"/"]]];
+}
+
 - (NSDictionary*)sendGroundTruth:(NSString*)groundTruth withError:(NSError*)error {
     NSDictionary *data = [[NSDictionary alloc] initWithObjects:@[@"groundTruth",groundTruth] forKeys:@[@"type", @"data"]];
     
@@ -46,14 +51,14 @@
 - (NSString*)postToEndpoint:(NSString*)endpoint withData:(NSDictionary*)data {
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
 
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:nil];
     
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody: jsonData];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     
-    NSLog(@"Sending request to %@ with contents: %@", [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId],[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]);
+    NSLog(@"Sending request to %@ with contents: %@", [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId],[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]);
     
     NSData* result = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
     
@@ -68,11 +73,11 @@
 - (NSString*)getToEndpoint:(NSString*)endpoint{
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
 
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
     
     [request setHTTPMethod:@"GET"];
     
-    NSLog(@"Sending request to %@", [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]);
+    NSLog(@"Sending request to %@", [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]);
     
     NSData* result = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
     
@@ -87,11 +92,11 @@
 - (NSDictionary*)getToEndpointAsDictionary:(NSString*)endpoint{
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
     
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]];
     
     [request setHTTPMethod:@"GET"];
     
-    NSLog(@"Sending request to %@", [[[NSURL URLWithString:API_URL]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]);
+    NSLog(@"Sending request to %@", [[[NSURL URLWithString:[self serverAddr]]URLByAppendingPathComponent:endpoint] URLByAppendingPathComponent:appDeletate.clientId]);
     
     NSData* result = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
         
@@ -108,7 +113,7 @@
         //NSLog(@"Sending request with contents: %@", [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]);
         return [[NSDictionary alloc] initWithObjects:@[@"rotation", @"displacement"] forKeys:@[@"rotation", @"displacement"]];
     } else {
-        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [NSURL URLWithString:API_URL]];
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL: [NSURL URLWithString:[self serverAddr]]];
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:nil];
         
         [request setHTTPMethod:@"POST"];

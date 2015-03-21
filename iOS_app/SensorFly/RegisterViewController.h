@@ -10,5 +10,6 @@
 
 @interface RegisterViewController : UIViewController
 - (IBAction)tappedSend:(id)sender;
-@property (strong, nonatomic) IBOutlet UITextField *inputField;
+@property (strong, nonatomic) IBOutlet UITextField *ipField;
+@property (strong, nonatomic) IBOutlet UITextField *idNumField;
 @end

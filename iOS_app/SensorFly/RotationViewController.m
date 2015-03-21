@@ -40,7 +40,7 @@
     return [(str.length<maxLen)? str:[str substringToIndex:maxLen] stringByAppendingString:@"º"];
 }
 
-- (void)refreshRotation:(id)object {
+- (void)refreshRotation {
     AppDelegate *appDelegate = [UIApplication sharedApplication].delegate;
     
     while (!self.done) {
@@ -60,18 +60,7 @@
     self.messageLabel.text = [self formatDegreeString:[self message]];
     self.done = false;
     
-    [self performSelectorInBackground:@selector(refreshRotation:) withObject:nil];
-    /* AppDelegate *appDelegate = [UIApplication sharedApplication].delegate;
-     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^(){
-        while (!self.done) {
-            NSDictionary* sensorData = [appDeletate.apiHelper getToEndpointAsDictionary:@"getSensorData"];
-            if (sensorData && [sensorData valueForKey:@"rotation"]) {
-                NSString* newLabel = [[sensorData valueForKey:@"rotation"] stringValue];
-                [self.rotationLabel performSelectorOnMainThread:@selector(setText:) withObject:newLabel waitUntilDone:true];
-            }
-            sleep(.25);
-        }
-    });*/
+    [self performSelectorInBackground:@selector(refreshRotation) withObject:nil];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -84,6 +73,9 @@
     AppDelegate *appDeletate = [UIApplication sharedApplication].delegate;
     
     [appDeletate showNextViewControllerWithMessage:@"0 (m)"];
+}
+- (IBAction)tappedRefreshUI:(id)sender {
+    [self performSelectorInBackground:@selector(refreshRotation) withObject:nil];
 }
 
 /*

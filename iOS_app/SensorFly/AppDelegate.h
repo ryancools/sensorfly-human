@@ -40,6 +40,7 @@ typedef enum {
 @property State state;
 
 -(void) showNextViewControllerWithMessage: (NSString*) message;
+-(void)setServerAddr:(NSString *)serverAddr;
 
 @end
 

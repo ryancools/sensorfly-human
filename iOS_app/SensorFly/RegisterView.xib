@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14C1514" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RegisterViewController">
             <connections>
-                <outlet property="inputField" destination="4c4-aw-c48" id="9ZN-IS-eIw"/>
+                <outlet property="idNumField" destination="4c4-aw-c48" id="jKv-Dn-r1K"/>
+                <outlet property="ipField" destination="XfY-gd-Ewy" id="Z6U-KM-npv"/>
                 <outlet property="view" destination="iN0-l3-epB" id="fMY-2h-6BT"/>
             </connections>
         </placeholder>
@@ -16,18 +17,18 @@
             <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please enter the ID below:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u8y-B4-hRq">
-                    <rect key="frame" x="224.5" y="65" width="152" height="53.5"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please enter the IP address and ID below:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u8y-B4-hRq">
+                    <rect key="frame" x="185" y="41" width="230" height="54"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="53.5" id="xvM-Uw-efv"/>
-                        <constraint firstAttribute="width" constant="152" id="yfZ-Iu-WWl"/>
+                        <constraint firstAttribute="width" constant="230" id="yfZ-Iu-WWl"/>
                     </constraints>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="#" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4c4-aw-c48">
-                    <rect key="frame" x="248" y="158" width="105" height="58"/>
+                    <rect key="frame" x="248" y="159" width="105" height="58"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="105" id="U0C-ES-csF"/>
                     </constraints>
@@ -35,7 +36,7 @@
                     <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" returnKeyType="send"/>
                 </textField>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FAh-3U-1L3">
-                    <rect key="frame" x="278" y="221" width="44" height="34"/>
+                    <rect key="frame" x="278" y="222" width="44" height="34"/>
                     <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
                     <state key="normal" title="Send">
                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -44,17 +45,22 @@
                         <action selector="tappedSend:" destination="-1" eventType="touchUpInside" id="D8D-IZ-A8l"/>
                     </connections>
                 </button>
+                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="10.0.23.151:5001" borderStyle="roundedRect" placeholder="IP address" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="XfY-gd-Ewy">
+                    <rect key="frame" x="0.0" y="103" width="291" height="30"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                    <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numbersAndPunctuation" returnKeyType="next"/>
+                </textField>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstItem="4c4-aw-c48" firstAttribute="top" secondItem="u8y-B4-hRq" secondAttribute="bottom" constant="40" id="Kcc-7l-jQW"/>
+                <constraint firstItem="4c4-aw-c48" firstAttribute="top" secondItem="u8y-B4-hRq" secondAttribute="bottom" constant="64" id="Kcc-7l-jQW"/>
                 <constraint firstItem="FAh-3U-1L3" firstAttribute="top" secondItem="4c4-aw-c48" secondAttribute="bottom" constant="5" id="Los-sl-m0y"/>
-                <constraint firstItem="u8y-B4-hRq" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="65" id="QaF-Te-hR2"/>
+                <constraint firstItem="u8y-B4-hRq" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="41" id="QaF-Te-hR2"/>
                 <constraint firstAttribute="centerX" secondItem="4c4-aw-c48" secondAttribute="centerX" constant="-0.5" id="VyY-5l-Qsc"/>
                 <constraint firstAttribute="centerX" secondItem="u8y-B4-hRq" secondAttribute="centerX" constant="-0.5" id="dOd-4G-g2J"/>
                 <constraint firstAttribute="centerX" secondItem="FAh-3U-1L3" secondAttribute="centerX" id="y6L-4F-0mb"/>
             </constraints>
-            <point key="canvasLocation" x="238.5" y="431"/>
+            <point key="canvasLocation" x="238" y="431"/>
         </view>
     </objects>
 </document>
