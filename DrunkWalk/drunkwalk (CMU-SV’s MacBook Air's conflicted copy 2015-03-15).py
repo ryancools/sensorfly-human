@@ -55,30 +55,28 @@ class DrunkWalk(object):
         Command as per the planning algorithm
         '''
         
-        cmd =None
+
         
         #for sf in self.sflist:
         if (not sf.is_goal_reached) and (not sf.cmd_set_flag):  #this if condition is added by xinlei
             print "Running command"
             cmd = self.cmd_algo.getCommand(sf)
+            clients[sf.id]['directions']['rotate']=cmd[0]
+            clients[sf.id]['directions']['move']=cmd[1]*cmd[2]
+            clients[sf.id]['directions']['valid'] = True
             sf.cmd_set_flag = True
-        
-        elif sf.is_goal_reached and (not sf.cmd_set_flag):
+        elif sf.is_goal_reached:
             cmd = [0,0,0]
-            sf.cmd_set_flag = True
         
-        if cmd:
-            print sf.id, cmd
+        #if cmd:
+        print sf.id,', command: [', cmd[0],cmd[1],cmd[2],']'
             #added by xinlei for human experiment testing
+        
             # send the command by wifi
             
         
             
         if cmd:
-            print sf.id,cmd[0],cmd[1],cmd[2]
-            clients[sf.id]['directions']['rotate']=cmd[0]
-            clients[sf.id]['directions']['move']=cmd[1]*cmd[2]
-            clients[sf.id]['directions']['valid'] = True
             sf.setMoveCommand(cmd)
         
     def update(self,clients,sf):

@@ -40,9 +40,10 @@ def drunkWalkCase(i):
     case = Case("DrunkWalk", "./ArenaMaps/testbed" + mapsize + ".bmp")
     case.cov_algo = "drunkwalk"
     case.start = [1,1]
-    case.end = [5,5]#[8,11]#[25,25]
+    case.end = [25,30]#[8,11]#[25,25]
     
-    case.map_array[case.end[0],case.end[1]] = 2  # added by xinlei
+   # case.map_array[case.end[0],case.end[1]] = 2  # added by xinlei
+   
     #case.map_array[25,26] = 2  # added by xinlei
     #case.map_array[25,24] = 2  # added by xinlei
     #case.map_array[24,24] = 2  # added by xinlei
@@ -62,10 +63,10 @@ def drunkWalkCase(i):
 #     case.goal_graph = goalgraph.GoalGraph()
     
     case.num_explorers = 1#1
-    case.num_anchors = 3#6
+    case.num_anchors =6#3#6
     
     # Noises
-    case.noise_radio = 0.1
+    case.noise_radio = 0.01#0.1
     case.noise_turn = 0.2    
     case.noise_velocity = 0.2
     case.noise_mag = 30
@@ -150,7 +151,10 @@ def runCase(case):
             
             
             #Initialize map direction
-            _sf_explorer.map_dir = 171
+            _sf_explorer.map_init_dir = 151
+            _sf_explorer.dir = 151
+            
+            _sf_explorer.rssi_cnt_stop = 10
             
             _cnt.addExplorer(_sf_explorer)
         
@@ -198,7 +202,7 @@ def runCase(case):
     mdict['caseInfo'] = [case.name, case.num_explorers, case.num_anchors, case.num_particles, case.max_iterations, \
                          case.noise_radio, case.noise_velocity, case.noise_turn, case.noise_mag]
 
-    saveMatFile(mdict, case)
+    #saveMatFile(mdict, case)
     pbar.finish()
 
 

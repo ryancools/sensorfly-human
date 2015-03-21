@@ -51,6 +51,7 @@
         }
         usleep(50e3);   // 50ms
     }
+    NSLog(@"Done");
 }
 
 - (void)viewDidLoad {

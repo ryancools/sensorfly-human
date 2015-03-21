@@ -7,6 +7,7 @@ import random
 import numpy as np
 from landmarkpf import LandmarkPF
 from numpy import mean
+import scipy.io
 
 class LandmarkDB:
     '''
@@ -25,6 +26,7 @@ class LandmarkDB:
         '''
         Add signature to the database and assign initial position estimate
         '''
+        #file_sig_db = 'sig_database.mat'
         # Check if it is a revisited landmark
         for _, lm in self.landmarks.items():
             if (lm.isRevisit(signature)):
@@ -32,14 +34,18 @@ class LandmarkDB:
                 lm.pf.correct(pose_pf)
                 lm.pf.normalizeWts()    #added by xinlei
                 lm.pf.resample_fast()
+                
+                sf.sig_xy = lm.xy   #added by xinlei for geting matched xy
                 return lm.pf
         # if it is not a revisit add new landmark
         self.lm_count += 1
         lm = Landmark(self.lm_count, signature, pose_pf, self.noise_radio,sf)
         self.landmarks[lm.id] = lm
+        sf.sig_xy = sf.xytocell(sf.xy)   #added by xinlei for geting matched xy
+        
         return None
 
-
+    
      
 class Landmark:
     '''
@@ -73,10 +79,17 @@ class Landmark:
         Gives distance between RToF signatures
         '''
         #modified by xinlei
+        '''
         d=np.zeros(len(sig1),np.float32)
+    
         for i in range (0,len(sig1)):
             d[i] = np.linalg.norm(sig1[i]-sig2[i])
             
 #        d = np.linalg.norm(sig1-sig2, 2) / len(sig1)
-        return mean(d)
-        
+        '''
+        sum_dt=0
+        for i in range  (0,len(sig1)):
+            sum_dt += sig1[i]*sig2[i]
+        d = 1 - sum_dt/np.linalg.norm(sig1, 2)/np.linalg.norm(sig2, 2)
+    
+        #print sig1, sig2,d

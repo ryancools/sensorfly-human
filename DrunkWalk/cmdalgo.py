@@ -8,9 +8,10 @@ from numpy import arctan2, degrees, arctan
 from unittest import case
 from math import atan
 
-CERTAIN_THRESHOLD = 4.5
+CERTAIN_THRESHOLD = 4.8
 
-Vel = 0.2
+GRID_SIZE = 0.5
+Vel = 1.5
 TimeToGo = 1
 
 class CmdBiased():
@@ -32,7 +33,6 @@ class CmdBiased():
             command = [random.randrange(0,360,20),TimeToGo,Vel]
             sf.has_collided = False
             print "collision's command, random"
-
             return command
         # If old command is complete execute new
         if True:
@@ -48,7 +48,7 @@ class CmdBiased():
     def __getCommandFromGraph(self, sf, est_cells, est_pos):
         # modified by xinlei, add the direction guidance
         if sf.certainty < CERTAIN_THRESHOLD:   
-            print "drunkwalk" 
+            #print "drunkwalk" 
             next_dir= self.__getNextDirToDesSample(sf,est_pos)
             
             '''    
@@ -72,6 +72,7 @@ class CmdBiased():
         sf.last_goal_dir = next_dir
         # Command the sensorfly to move
         command = [next_dir,TimeToGo,Vel]
+        print "command: ", next_dir, TimeToGo*Vel
         #command = self.__getTurnTimeVel(sf, est_pos, next_dir)
         
  #       if sf.certainty < CERTAIN_THRESHOLD:        
@@ -95,8 +96,8 @@ class CmdBiased():
         dy = sf.des[1]-est_pos[1]
         
         #just for debugging
-        dx = sf.des[0] - sf.xy[0]
-        dy = sf.des[1]-sf.xy[1]
+        #dx = sf.des[0] - sf.xy[0]
+        #dy = sf.des[1]-sf.xy[1]
         
         if dx==0 and dy==0:
             delta_dir = 0
@@ -112,8 +113,8 @@ class CmdBiased():
         elif dy<0 and dx>0:
             delta_dir += 360
     
-        next_dir = (delta_dir+sf.map_dir)%360
-        print delta_dir,next_dir
+        next_dir = (delta_dir+sf.map_init_dir)%360
+        #print delta_dir,next_dir
         return next_dir
             
     

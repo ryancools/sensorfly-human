@@ -101,13 +101,15 @@ class SensorFly(object):
         
         self.rssi= zeros(self.n_anchors)
         self.rssi_rcving_flag = False
-        self.rssi_rcv_all = False
+        #self.rssi_rcv_all = False
+        self.rssi_cnt_stop = 10
         
         self.mag_dir = float(init_dir)
+        
         self.mag_rcving_flag = False    #flag for getting mag data from explorer and forward to phone
         self.mag_rcd_flag = False       #flag for recording mag data
         
-        self.map_dir = 0                #direction for mag X+
+        self.map_init_dir = 0                #direction from magnetometer for X+ (just for offset)
         
         self.opt = 0
         self.opt_rcving_flag = False    #flag for getting opt data from explorer and forward to phone
@@ -117,7 +119,7 @@ class SensorFly(object):
         
         self.gnd_trth_rcd_flag = False      #flag for recording ground truth position
         self.rst_opt_flag = False       #flag for reseting optical flow
-        self.des_addr = '\x01'+chr(self.id+1)
+        self.des_addr = '\x01'+chr(self.id)
         
         self.pf_updated_flag = False    #flag for updating particle filter
         self.cmd_set_flag = False       #flag for setting command for explorers
@@ -132,7 +134,7 @@ class SensorFly(object):
         self.p_flag_1 = True
         self.p_flag_2 = True
         
-        
+        self.sig_xy = [float(i) for i in init_xy]   #the location for matching signature
         
     def setMoveCommand(self, command_params):
         '''
@@ -305,32 +307,35 @@ class SensorFly(object):
     
     def reset_rssi(self):
         self.rssi = zeros(self.n_anchors)
-        self.rssi_rcv_all = False
+        #self.rssi_rcv_all = False
     
     
     def get_rssi(self,xbee):
-        while (self.rssi_rcv_all==False and self.rssi_rcving_flag == True):
+        rssi_cnt=0
+        while (self.rssi_rcving_flag == True and rssi_cnt<self.rssi_cnt_stop):
             try:
                 response = xbee.wait_read_frame()
                 #print response
                 addr = response.get('source_addr')
-                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id+1):    #get the data from explorer id 
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
                     rf_data = response.get('rf_data')
                     if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_RSSI):   # get RSSI package
                         for i in range(0,self.n_anchors):
                             ancho_id = int(('0x' + binascii.hexlify(rf_data[2*i+1])),16)
-                            if (self.rssi[ancho_id-1] == 0):    #has not got new rssi after reset
-                                self.rssi[ancho_id-1] = int(('0x' + binascii.hexlify(rf_data[2*i+2])),16)
-                                print "got rssi from", ancho_id
-                    #print rf_data0, rf_data1
-                    self.rssi_rcv_all = self._rssi_rcv_all()
-                    if (self.rssi_rcv_all):
-                        self.rssi_rcving_flag = False
-                        self.print_rssi()
-                        break
+                            #if (self.rssi[ancho_id-1] == 0):    #has not got new rssi after reset
+                            rssi_get = int(('0x' + binascii.hexlify(rf_data[2*i+2])),16)
+                            self.rssi[ancho_id-1] += rssi_get
+                            #print "got rssi from: ", ancho_id, ' rssi: ', rssi_get
+                        rssi_cnt += 1
+                        print "rssi get ",rssi_cnt
+        
             except KeyboardInterrupt:
                 return
-                
+         
+        self.rssi_rcving_flag = False
+        for i in range(0,self.n_anchors):
+            self.rssi[i] /=self.rssi_cnt_stop 
+        self.print_rssi()            
         return
     
     def print_rssi(self):
@@ -348,7 +353,7 @@ class SensorFly(object):
         #        print "running get_opt_mag"
                 response = xbee.wait_read_frame()
                 addr = response.get('source_addr')
-                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id+1):    #get the data from explorer id 
+                if (int(('0x' + binascii.hexlify(addr[0])),16)==1 and int(('0x' + binascii.hexlify(addr[1])),16)==self.id):    #get the data from explorer id 
                     rf_data = response.get('rf_data')
                     if (int(('0x' + binascii.hexlify(rf_data[0])),16)==TYPE_MAG and self.mag_rcving_flag == True):   # get MAG package
                         #put parse MAG package here

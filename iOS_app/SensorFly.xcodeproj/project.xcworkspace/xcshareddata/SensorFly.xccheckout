@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>38B87ECE-4D68-4A40-9DBB-BADC39EAC337</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SensorFly</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>0988CCC81513E0D4EB4FB406315DC1EC1215E604</key>
+		<string>https://github.com/ryancools/sensorfly-human.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>iOS_app/SensorFly.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>0988CCC81513E0D4EB4FB406315DC1EC1215E604</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/ryancools/sensorfly-human.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>0988CCC81513E0D4EB4FB406315DC1EC1215E604</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>0988CCC81513E0D4EB4FB406315DC1EC1215E604</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Crossing%20Paper%20for%20human%20exp</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -120,7 +120,10 @@ class RobotPF(object):
         
         # If no signature found nothing to do
         if (update_pf == None):
+            sf.sig_xy = [-1,-1]
             return False    #return #modified by xinlei
+        
+        
         
         # Increment signature match counts
         self.sf.sig_match_cnt += 1

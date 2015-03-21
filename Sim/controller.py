@@ -18,11 +18,11 @@ from time import sleep
 
 DES_THRESHOLD = 0.5
 
-
 clients = None
 data = None
 
-round = 0
+
+GRID_SIZE = 0.5
 
 
 States = ["Unregistered","Registered", "GroundTruth", "Directions", "Rotating", "Rotated", "Moving", "Moved"]
@@ -46,7 +46,7 @@ class Controller(object):
         #added by xinlei
         self.state = "Unregistered"
        
-        
+        self.round = 0
 
     def addExplorer(self, sf):
         '''
@@ -141,7 +141,8 @@ class Controller(object):
     
     
     # added by xinlei
-    def _state_cnt(self,xbee,algo,record):
+    def _state_cnt(self,algo,record,ser):
+        
         
         for sf in self.explorers:
             #print sf.state,"explorer no.", sf.id
@@ -155,6 +156,7 @@ class Controller(object):
                 
                 #for print
                 if sf.p_flag_1:
+                    
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
@@ -176,34 +178,37 @@ class Controller(object):
                 
                 
             elif sf.state == "GroundTruth":
+                if ser.isOpen()==False:
+                    ser.open()
+                xbee = XBee(ser)
+                
                 
                 #for print
                 if sf.p_flag_1:
+                    self.round += 1 
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
                     
                     
-
                 #receive sf.xy
                 #print self.state
                 
                 #sf.is_moving = False
-
                 
                 self.updateReal(sf)
                 if sf.rssi_rcving_flag:
                     sf.reset_rssi()
                     sf.get_rssi(xbee)
                 #print "getting rssi for explorer no.", sf.id
-
                 
                 
                 #if sf.rssi_rcv_all and sf.cmd_set_flag == False:
                 algo.update(clients,sf)   #needed to be changed
                 algo.command(clients,sf)
                 
-
+                    
+                
                 sf.file_rcd_flag = False
                     
                 #print "explorer no.", sf.id,"[",   sf.command.velocity,sf.command.turn, "}"
@@ -216,14 +221,19 @@ class Controller(object):
                     sf.p_flag_1 = True
                 
                 
-
                 if not sf.file_rcd_flag:
                     
                         
-                    record_str = str(1)+','+ sf.name+','+str(sf.xy[0])+','+ str(sf.xy[1])+','+ \
+                    record_str =str(self.round)+ ',' + sf.name+','+str(sf.xy[0])+','+ str(sf.xy[1])+','+ \
                                str(sf.pf_estimated_xy[0])+','+str(sf.pf_estimated_xy[1])+','+ \
                                str(sf.dr_estimated_xy[0])+','+str(sf.dr_estimated_xy[1])+','+str(pct_covered)+','+\
-                               str(sig_match_cnt)+','+str(sf.certainty)+','+str(sf.rssi[0])+','+str(sf.rssi[1])+','+str(sf.rssi[2])+'\n'
+                               str(sig_match_cnt)+','+str(sf.certainty)+','+str(sf.rssi[0])+','+str(sf.rssi[1])+','+\
+                               str(sf.rssi[2])+','+str(sf.rssi[3])+','+str(sf.rssi[4])+','+str(sf.rssi[5])+ ','+\
+                               str(sf.mag_dir)+','+str(sf.opt)+','+str(int(sf.is_goal_reached))+ ','+\
+                               str(sf.command.turn)+ ','+ str(sf.command.velocity*sf.command.time)+','+\
+                               str(sf.sig_xy[0])+','+str(sf.sig_xy[1])+'\n'
+                    print record_str
+                    #filestr1 = './'+filestr
                     with open(filestr,'a') as myfile:
                         myfile.write(record_str)
                     print "Recording"
@@ -241,19 +251,18 @@ class Controller(object):
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
                 
-
                 #start Rotating
                # print self.state
                 
                 #sf.is_moving = True
                 
-                print data
-            
+                
+                
                 sf.get_opt_mag(xbee, data)
                 sf.mag_rcving_flag = True
                 sf.mag_rcd_flag = True
                 
-                
+                print data[sf.id]
                 
                 
             elif sf.state == "Rotated":
@@ -263,7 +272,6 @@ class Controller(object):
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_2 = False
                     sf.p_flag_1 = True
-
                 
                 #stop rotating
                 #print self.state
@@ -277,7 +285,7 @@ class Controller(object):
                 sf.mag_rcd_flag = False
                 sf.rst_opt_flag = True
                 
-
+                
                 #print sf.mag_dir
                 #get sf.mag_dir and update
                 
@@ -288,10 +296,9 @@ class Controller(object):
                     print "explorer",sf.id,',',sf.state
                     sf.p_flag_1 = False
                     sf.p_flag_2 = True
-
                 #start moving
                 #print self.state
-                print data
+                
 
                 #sf.is_moving = True
                 
@@ -299,6 +306,8 @@ class Controller(object):
                 sf.get_opt_mag(xbee, data)
                 sf.opt_rcving_flag = True
                 sf.opt_rcd_flag = True
+                
+                print data[sf.id]
                 
             elif sf.state == "Moved":
                 
@@ -323,7 +332,8 @@ class Controller(object):
                 sf.opt_rcving_flag =False
                 sf.opt_rcd_flag = False
                 
-               
+                if ser.isopen():
+                    ser.close()
                 
                 #print sf.opt
                 #get sf.mag_dir and update
@@ -343,8 +353,8 @@ class Controller(object):
         data = inputData
         filestr = inputfile_str
         #added by xinlei for human experiment    
-        ser = serial.Serial('/dev/tty.usbserial-DA017KHH',38400)
-        xbee = XBee(ser)
+        ser = serial.Serial('/dev/tty.usbserial-A5025X6Z',38400)
+        
         
         
         #infostr = case.name +','+ str(case.num_explorers) +','+ str(case.num_anchors), case.num_particles, case.max_iterations, \
@@ -392,7 +402,7 @@ class Controller(object):
                 #sf.state = self.state
             
             
-            self._state_cnt(xbee,algo,record)
+            self._state_cnt(algo,record,ser)
             
             #sleep(.05)
             
@@ -422,8 +432,9 @@ class Controller(object):
                 self.arena.gridmap.displayUpdate()
             if case.stop_on_all_covered and case.goal_graph and is_all_covered:
                 break
-        #target.close()    
-
+        #target.close()  
+        if ser.isOpen():
+            ser.close()  
         return record
 
 
@@ -452,6 +463,10 @@ class Controller(object):
         sf.xy = xy
 #        sf.xy = [int(clients[sf.id]['groundTruth']['x']),int(clients[sf.id]['groundTruth']['y'])]
         sf.xy = [int(clients[sf.id]['groundTruth']['x'])+1,int(clients[sf.id]['groundTruth']['y'])+1]
+        
+        #sf.xy[0] =GRID_SIZE * sf.xy[0]
+        #sf.xy[1] =GRID_SIZE * sf.xy[1]
+        
         sf.gnd_trth_rcd_flag = True
         
         print "explorer",sf.id," ",sf.xy
