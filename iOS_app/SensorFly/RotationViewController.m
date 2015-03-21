@@ -75,7 +75,9 @@
     [appDeletate showNextViewControllerWithMessage:@"0 (m)"];
 }
 - (IBAction)tappedRefreshUI:(id)sender {
-    [self performSelectorInBackground:@selector(refreshRotation) withObject:nil];
+    //[self performSelectorInBackground:@selector(refreshRotation) withObject:nil];
+    [self.view performSelectorOnMainThread:@selector(setNeedsLayout) withObject:nil waitUntilDone:NO];
+    [self.view performSelectorInBackground:@selector(setNeedsLayout) withObject:nil];
 }
 
 /*

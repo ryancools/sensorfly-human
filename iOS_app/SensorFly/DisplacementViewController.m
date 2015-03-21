@@ -91,7 +91,9 @@
     [appDeletate showNextViewControllerWithMessage:nil];
 }
 - (IBAction)tappedRefreshUI:(id)sender {
-    [self performSelectorInBackground:@selector(refreshDistance) withObject:nil];
+    //[self performSelectorInBackground:@selector(refreshDistance) withObject:nil];
+    [self.view performSelectorOnMainThread:@selector(setNeedsLayout) withObject:nil waitUntilDone:NO];
+    [self.view performSelectorInBackground:@selector(setNeedsLayout) withObject:nil];
 }
 
 /*
